@@ -1,0 +1,182 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;to replace a given word with the next given word in the previously given string;;;;;;;;;;;;;;;;;;;;
+;;;;;input- the string, the word to be replaced , the word with which to be replaced;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+section .data
+space : db " "
+section .bss
+string1: resb 50
+string2: resb 50
+string3: resb 50
+count : resb 1
+temp: resb 1
+last :resb 1
+counter: resb 1
+smallstr: resb 50
+larsz: resb 1
+smallsz: resb 1
+larstr:resb 50
+size : resb 1
+special: resb 1
+size1: resb 1
+size2: resb 1
+string4: resb 50
+string5: resb 50
+
+section .text
+global _start
+_start:
+	cld
+	mov edi,string1	
+	call read_string
+
+	cld
+	mov edi,string2
+	call read_string
+	
+	cld 
+	mov edi,string3
+	call read_string
+
+	mov edi,string5
+	push edi
+	
+	cld
+	mov ecx,string1
+	mov edi,string4	
+
+
+operation:
+	mov esi,ecx
+	load:
+	cld
+	lodsb
+	mov byte[last],al
+	cmp al,32
+	je next_word
+	cmp al,0
+	je fin_line
+	stosb
+	jmp load	
+next_word:
+	mov al,0
+	stosb
+	mov ecx,esi
+	jmp compare
+fin_line:
+	stosb
+	jmp compare
+compare:
+	mov ebx,string2
+	mov edx,string4	
+	loop1:
+	mov al,byte[edx] 
+	cmp byte[ebx],al
+	jne store
+	cmp al,0
+	je replace
+	inc ebx
+	inc edx
+	jmp loop1
+
+store:
+	pop edi
+	mov esi,string4	
+
+	loop2:
+	cld
+	lodsb
+	cmp al,0
+	je finish_store
+	stosb
+	jmp loop2
+	finish_store:
+	cmp byte[last],0
+	je finish
+	mov al,32
+	stosb
+	push edi
+	mov edi,string4
+	jmp operation
+replace:
+	pop edi
+	cld
+	mov esi,string3
+	loop3:
+	lodsb
+	cmp al,0
+	je finish_replace
+	stosb
+	jmp loop3
+	finish_replace:
+	cmp byte[last],0
+	je finish
+	mov al,32
+	stosb
+	push edi
+	mov edi,string4
+	jmp operation
+	
+finish:
+	mov al,0
+	stosb
+exit: 
+
+	cld 
+	mov esi,string5
+	call print_string
+	
+	mov eax,1
+	mov ebx,0
+	int 80h
+read_string:
+	pusha
+	mov byte[count],0
+
+	read:
+	
+	mov eax,3
+	mov ebx,0
+	mov ecx,temp
+	mov edx,1
+	int 80h
+
+	mov al,byte[temp]
+	inc byte[count]
+
+	cmp al,10
+	je end_read
+	
+
+	
+	stosb
+	jmp read
+
+	end_read:
+	mov al,0
+	stosb
+	popa
+	ret
+
+print_string:
+	pusha
+	cld
+	
+	print:
+	lodsb
+	cmp al,0
+	je end_print
+	
+	mov byte[temp],al
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	
+	jmp print
+
+	end_print:
+	popa
+	ret
