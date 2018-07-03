@@ -1,0 +1,188 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;counts the distinct lowercases between uppercase alphabets;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+section .data
+zero : db "0"
+
+section .bss
+string1: resb 50
+string2: resb 50
+count : resb 1
+temp: resb 1
+num:resw 1
+nod : resb 1
+checker: resb 1
+char:resb 1
+num1:resb 1
+array: resb 50
+string3: resb 50
+same: resb 1
+
+section .text
+global _start
+_start:
+
+	mov edi,string1
+	call read_string
+
+	mov ebx,string3
+	mov byte[ebx],0
+	inc ebx
+	mov esi,string1
+
+operation:
+	cld
+	lodsb
+	cmp al,0
+	je finish
+	cmp al,65
+	jb count_a
+	cmp al,90
+	ja count_a
+	mov byte[checker],1
+	mov cx,word[num]
+	mov word[num],0
+	mov ebx,string3
+	mov byte[ebx],0
+	inc ebx
+	cmp cx,word[num1]
+	jb operation
+	mov word[num1],cx
+	jmp operation
+
+count_a:
+	mov byte[char],al
+	call comparison
+	cmp byte[same],1
+	je operation
+	cmp byte[checker],0
+	je operation
+	mov al,byte[char]
+	mov edx,edi
+	mov edi,ebx
+	mov ebx,edx
+	cld
+	dec edi
+	stosb
+	mov al,0
+	stosb
+	mov edx,edi
+	mov edi,ebx
+	mov ebx,edx
+	inc word[num]
+	jmp operation
+finish:
+	call print_num
+exit: 
+	mov eax,1
+	mov ebx,0
+	int 80h
+comparison:
+	pusha
+	push esi
+	mov esi,string3
+	cld
+	loop2:
+	lodsb
+	cmp al,0
+	je unset
+	cmp byte[char],al
+	je set
+	jmp loop2
+	unset:
+	mov byte[same],0
+	jmp finish_comp
+	set:
+	mov byte[same],1
+	finish_comp:
+	pop esi
+	popa
+	ret
+
+read_string:
+	pusha
+
+	read:
+	mov eax,3
+	mov ebx,0
+	mov ecx,temp
+	mov edx,1
+	int 80h
+
+	mov al,byte[temp]
+	cmp al,10
+	je end_read
+	
+	stosb
+	jmp read
+
+	end_read:
+	mov al,0
+	stosb
+	popa
+	ret
+
+print_num:
+	pusha
+	cmp word[num1],0
+	je print_zero
+	extract_no:
+	cmp word[num1],0
+	je print
+	inc byte[nod]
+	mov dx,0
+	mov ax,word[num1]
+	mov bx,10
+	div bx
+	push dx
+	mov word[num1],ax
+	jmp extract_no
+	
+	print:
+	cmp byte[nod],0
+	je end_print
+	dec byte[nod]
+	pop dx
+	mov byte[temp],dl
+	add byte[temp],30h
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	jmp print
+
+	print_zero:
+	mov eax,4
+	mov ebx,1
+	mov ecx,zero
+	mov edx,1
+	int 80h
+	
+	end_print:
+	popa
+	ret
+
+print_string:
+	pusha
+	cld
+	
+	print_i:
+	lodsb
+	cmp al,0
+	je end_print_i
+	
+	mov byte[temp],al
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	
+	jmp print_i
+
+	end_print_i:
+	popa
+	ret
