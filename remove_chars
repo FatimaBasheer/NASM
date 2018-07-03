@@ -1,0 +1,106 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;remove alphabets a and i both upper and lower cases from the given string;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+section .data
+A: db "A"
+I: db "I"
+a:db "a"
+i:db "i"
+section .bss
+string1: resb 50
+string2: resb 50
+temp: resb 1
+size: resb 1
+count: resb 1
+count1: resb 1
+
+section .text
+global _start
+_start:
+	call read_string
+	mov esi,string1
+	mov ebx,string2
+
+removing:
+	cld
+	lodsb
+	cmp al,0
+	je finish
+	cmp al,byte[A]
+	je removing
+	cmp al,byte[I]
+	je removing
+	cmp al,byte[a]
+	je removing
+	cmp al,byte[i]
+	je removing
+	
+	mov byte[ebx],al
+	inc ebx
+	jmp removing
+finish:
+	mov byte[ebx],0
+	call print_string
+	mov eax,1
+	mov ebx,0
+	int 80h
+	
+
+
+read_string:
+	pusha
+	mov edi,string1
+	cld
+	
+ 	read:
+	inc byte[count]
+	mov eax,3
+	mov ebx,0
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	
+	cmp byte[temp],10
+	je end_read
+	mov al,byte[temp]
+	stosb
+	jmp read
+	
+end_read:
+	mov al,0
+	stosb
+	popa
+	ret
+
+print_string:
+	pusha
+	cld
+	mov esi,string2
+
+	print:
+	lodsb
+	mov byte[temp],al
+	cmp al,0
+	je end_print 
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	jmp print
+end_print:
+	popa
+	ret
+
+print_char:
+	pusha
+	mov byte[temp],al
+	mov eax,4
+	mov ebx,1
+mov ecx,temp
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
