@@ -1,0 +1,144 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;to reverse words in a string;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+section .bss
+string1: resb 50
+string2: resb 50
+temp: resb 1
+count: resb 1
+last : resb 1
+string3:resb 50
+string4:resb 50
+string5:resb 50
+
+section .text
+global _start
+_start:
+	mov edi,string1
+	call read_string
+	
+	mov ebx,string5
+
+	mov esi,string1
+	mov edi,string2
+
+	call reverse_string
+
+operation:
+	mov byte[count],0
+	mov esi,string2
+	mov edi,string3
+	loop1:
+	cld
+	lodsb
+	mov byte[last],al
+	cmp al,32
+	je end_loop
+	cmp al,0
+	je end_loop
+	inc byte[count]
+	stosb
+	jmp loop1
+end_loop:
+	push esi
+	mov al,0
+	stosb
+	mov esi,string3
+	mov edi,string4
+	call reverse_string
+	loop2:	
+	mov edi,ebx
+	mov esi,string4
+	loop4:
+	cld
+	lodsb
+	cmp al,0
+	je end_loop4
+	stosb
+	jmp loop4
+end_loop4:
+	cmp byte[last],0
+	je print_ans
+	mov al,32
+	stosb
+	mov ebx,edi
+	mov edi,string3
+	mov byte[count],0
+	pop esi
+	jmp loop1
+print_ans:
+	mov al,0
+	stosb
+	cld
+	mov esi ,string5
+	call print_string
+	pop esi
+
+exit: 
+	mov eax,1
+	mov ebx,0
+	int 80h
+reverse_string:
+	dec byte[count]
+	movzx ecx,byte[count]
+	add esi,ecx
+	inc byte[count]
+	loop3:
+	std
+	lodsb
+	cld
+	stosb
+	dec byte[count]
+	cmp byte[count],0
+	je finish_reverse
+	jmp loop3
+finish_reverse:
+	cld
+	mov al,0
+	stosb
+	ret
+	
+read_string:
+	pusha
+
+	read:
+	mov eax,3
+	mov ebx,0
+	mov ecx,temp
+	mov edx,1
+	int 80h
+
+	mov al,byte[temp]
+	cmp al,10
+	je end_read
+	inc byte[count]
+	stosb
+	jmp read
+
+	end_read:
+	mov al,0
+	stosb
+	popa
+	ret
+
+print_string:
+	pusha
+	
+	print:
+	lodsb
+	cmp al,0
+	je end_print
+	
+	mov byte[temp],al
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	
+	jmp print
+
+	end_print:
+	popa
+	ret
