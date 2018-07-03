@@ -1,4 +1,4 @@
-# NASM
+# NASM(Netwide Assembler)
 ---------------Executing a NASM program----------------
 1. Assembling the source file
     $nasm -f elf filename.asm
