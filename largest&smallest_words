@@ -1,0 +1,208 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;find the largest and smallest words in a string;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+section .data
+space : db " "
+section .bss
+string1: resb 50
+string2: resb 50
+string3: resb 50
+count : resb 1
+temp: resb 1
+last :resb 1
+counter: resb 1
+smallstr: resb 50
+larsz: resb 1
+smallsz: resb 1
+larstr:resb 50
+size : resb 1
+special: resb 1
+size1: resb 1
+size2: resb 1
+string4: resb 50
+
+section .text
+global _start
+_start:
+	
+	mov edi,string1	
+	call read_string
+	
+	mov edi,string4
+	mov esi,string1
+	movzx ecx,byte[count]
+	rep movsb
+
+	mov byte[size2],0
+	
+	mov edi,string2
+	mov esi,string1
+	mov byte[size1],0
+loop1:
+	inc byte[size1]
+	cld
+	lodsb
+	cmp al,0
+	je check
+	cmp al,32
+	je check
+	stosb
+	jmp loop1
+
+check:
+	mov byte[last],al
+	mov al,0
+	stosb
+	mov cl,byte[size1]
+	mov byte[size1],0
+	cmp cl,byte[size2]
+	jb loop3
+	mov byte[size2],cl
+	cld
+	push esi
+	push edi
+	movzx ecx, byte[size2]
+	mov esi,string2
+	mov edi,larstr
+	rep movsb
+	pop edi
+	pop esi
+	cmp byte[last],0
+	je next
+	jmp loop3
+
+loop3:
+	mov edi,string2
+	mov byte[size1],0
+	jmp loop1	
+
+next:
+	mov ecx,0
+	cld
+	mov esi,string4
+	mov edi,smallstr
+	loop2:
+	cld
+	lodsb
+	inc ecx
+	cmp al,32
+	je loop7
+	stosb
+	jmp loop2
+	loop7:
+	mov al,0
+	stosb
+	mov byte[size2],cl
+	mov edi,string3
+	mov esi,string4
+	mov byte[size1],0
+
+	
+loop4:
+	cld
+	lodsb	
+	inc byte[size1]
+	cmp al,0
+	je check1
+	cmp al,32
+	je check1
+	stosb
+	jmp loop4
+
+check1:
+	mov byte[last],al
+	mov al,0
+	stosb
+	mov cl,byte[size1]
+	mov byte[size1],0
+	cmp cl,byte[size2]
+	ja loop9
+	mov byte[size2],cl
+	cld
+	push esi
+	push edi
+	movzx ecx, byte[size2]
+	mov esi,string3
+	mov edi,smallstr
+	rep movsb
+	pop edi
+	pop esi
+	loop9:	
+	cmp byte[last],0
+	je finish1
+	jmp loop6
+
+loop6:
+	mov edi,string3
+	mov byte[size1],0
+	jmp loop4
+
+finish1:
+	mov esi,larstr
+	call print_string
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,space
+	mov edx,1
+	int 80h
+	popa
+	cld
+	mov esi,smallstr
+	call print_string
+exit: 
+	mov eax,1
+	mov ebx,0
+	int 80h
+
+read_string:
+	pusha
+	mov byte[count],0
+
+	read:
+	
+	mov eax,3
+	mov ebx,0
+	mov ecx,temp
+	mov edx,1
+	int 80h
+
+	mov al,byte[temp]
+	inc byte[count]
+
+	cmp al,10
+	je end_read
+	
+
+	
+	stosb
+	jmp read
+
+	end_read:
+	mov al,0
+	stosb
+	popa
+	ret
+
+print_string:
+	pusha
+	cld
+	
+	print:
+	lodsb
+	cmp al,0
+	je end_print
+	
+	mov byte[temp],al
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,temp
+	mov edx,1
+	int 80h
+	
+	jmp print
+
+	end_print:
+	popa
+	ret
